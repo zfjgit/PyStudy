@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34701.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PyStudy", "PyStudy.pyproj", "{DB2DD142-B70B-4CA2-A9B5-9EAD8F6510F2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DB2DD142-B70B-4CA2-A9B5-9EAD8F6510F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB2DD142-B70B-4CA2-A9B5-9EAD8F6510F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {480C6879-A4F7-4ACC-8B09-EF5B257F867C}
+	EndGlobalSection
+EndGlobal
