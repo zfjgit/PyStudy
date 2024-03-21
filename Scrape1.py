@@ -129,7 +129,7 @@ def save(companys, i):
 
 def json_to_csv():
   json_list = []
-  file = 'C:/Users/zfjem/Desktop/companys/companys-1.json'
+  file = 'C:/Users/zfjem/Desktop/company/companys-1.json'
   with open(file, 'r', encoding='utf-8') as f:
     json_str = f.read()
     json_list = json.decoder.JSONDecoder().decode(json_str)
