@@ -1,4 +1,5 @@
 #coding=gbk
+from random import Random
 from shlex import join
 import requests
 import json
@@ -61,7 +62,7 @@ def scrape():
            
         companies_data.append(c_str)
         
-    time.sleep(10)
+    time.sleep(Random.randint(5, 10)) # sleep 5-10s
   
   print(f'data in total: {len(companies_data)}')
   
