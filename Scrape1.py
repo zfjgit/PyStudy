@@ -5,26 +5,37 @@ import random
 import requests
 from bs4 import BeautifulSoup as bs
 
+headers = {}
+headers["Cookie"] = "Hm_lvt_819e30d55b0d1cf6f2c4563aa3c36208=1710811427,1710907149,1710984333,1711081288; Hm_lpvt_819e30d55b0d1cf6f2c4563aa3c36208=1711081288; Hm_lvt_291f91f93e981298bf9f990196e21722=1710811399,1710907192,1710984336,1711081315; Hm_lpvt_291f91f93e981298bf9f990196e21722=1711081315"
+headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0"
+headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+headers["Accept-Encoding"] = "gzip, deflate, br"
+headers["Accept-Language"] = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
+
+keys = ['公司名称','主营业务','公司地址','注册资本','公司简介','固定电话','法定代表人','经理手机','电子邮件','邮政编码','法人名称','简称','主要经营产品','经营范围','营业执照号码','发证机关','经营状态','经营模式','成立时间','职员人数','公司官网','所属分类','类型']
 
 def list():
   url = "https://b2b.11467.com/search/40-";
   #urls = ["https://b2b.11467.com/search/40-14.htm", ""]
 
   list_url = ''
-  for i in range(11, 21):
+  
+  companys = []
+  for i in range(12, 16):
     list_url = url + str(i) + ".htm"
     
     response = ''
     try:
-      response = requests.get(list_url)
+      response = requests.get(list_url, headers=headers)
     except:
       continue;
     
     #print(response.text)
     soup = bs(response.text, "html.parser")
 
+    print(f'load page success: {list_url}')
+    
     j = 0
-    companys = []
     # Extract data from the page
     divs = soup.find_all("div", class_="f_l")
     #print(divs)
@@ -43,37 +54,40 @@ def list():
         company['公司名称'] = a.text;
       
         if len(div.contents) > 1:
-          company['主营业务'] = div.contents[1].text;
+          company['主营业务'] = div.contents[1].text.replace('主营产品：', '');
         if len(div.contents) > 2:
-          company['公司地址'] = div.contents[2].text;
+          company['公司地址'] = div.contents[2].text.replace('地址：', '');
         if len(div.contents) > 3:
-          company['注册资本'] = div.contents[3].text;
+          company['注册资本'] = div.contents[3].text.replace('注册资本：', '');
         if len(div.contents) > 4:
-          company['成立时间'] = div.contents[4].text;  
+          company['成立时间'] = div.contents[4].text.replace('成立时间：', '');  
         
         try:
           company = detail(company, a.attrs['href'], j + 1);
         except : 
           pass
         
-        if company is not None:
-          companys.append(company)
+        if company is None:
+          continue;
+         
+        c_str = '';
+        for key in keys:
+          if key not in company:
+            c_str += ','
+          else:
+            c_str += company[key].replace(',', ' ') + ','
+          
+        companys.append(c_str)
       
-    print('list success: ' + str(i) + '  ' + list_url)
-    save(companys, i);
+    print(f'scrape list page success, data in total: {len(companys)}, url: {list_url}')
     
     time.sleep(random.randint(5, 10)) # sleep 5-10s
   
-    
+  save(companys, i);
+  
+
 def detail(company, url, j):
   #print("Hello, detail!")
-      
-  headers = {}
-  headers["Cookie"] = "Hm_lvt_819e30d55b0d1cf6f2c4563aa3c36208=1710811427,1710907149; Hm_lvt_291f91f93e981298bf9f990196e21722=1710811399,1710907192; Hm_lpvt_819e30d55b0d1cf6f2c4563aa3c36208=1710909924; Hm_lpvt_291f91f93e981298bf9f990196e21722=1710921133"
-  headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0"
-  headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
-  headers["Accept-Encoding"] = "gzip, deflate, br"
-  headers["Accept-Language"] = "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
       
   #print(url)
   
@@ -111,20 +125,34 @@ def detail(company, url, j):
       continue
     company[td_name] = tds[1].text 
         
-  print('detail success: ' + str(j) + '  ' + url)
+  print(f'scrape detail page success: No.{j}, url: {url}')
   
   time.sleep(random.randint(5, 10)) # sleep 5-10s
+  
   return company
     
+
 def save(companys, i):
   if(len(companys) == 0):
     return;
 
-  file = 'company/companies-11467-' + str(i) + '.json'
-  with open(file, 'w', encoding='utf-8') as f:
-    json.dump(companys, f, ensure_ascii= False, separators=[',\n', ':']) # ensure_ascii=False 不转换成ascii编码，即不转换成unicode
+  file = f'company/companies-11467-{i}.csv'
+  d_str = ','.join(keys) + '\n' + '\n'.join(companys)
+  with open(file, 'w', encoding='gb18030') as f:
+      f.write(d_str)
     
-  print("save success: " + file)
+  print(f"save success: {file}")
+
+
+list()
+
+
+
+
+
+
+
+
 
 
 def json_to_csv():
@@ -134,7 +162,6 @@ def json_to_csv():
     json_str = f.read()
     json_list = json.decoder.JSONDecoder().decode(json_str)
   
-  keys = ['公司名称','主营业务','公司地址','注册资本','公司简介','固定电话','法定代表人','经理手机','电子邮件','获取报价','邮政编码','法人名称','简称','主要经营产品','经营范围','营业执照号码','发证机关','经营状态','经营模式','成立时间','职员人数','公司官网','所属分类','类型']
   csv_str = '公司名称,主营业务,公司地址,注册资本,公司简介,固定电话,法定代表人,经理手机,电子邮件,获取报价,邮政编码,法人名称,简称,主要经营产品,经营范围,营业执照号码,发证机关,经营状态,经营模式,成立时间,职员人数,公司官网,所属分类,类型\n';
   for obj in json_list:
     #print(obj['公司名称'])
@@ -150,7 +177,7 @@ def json_to_csv():
         csv_str += ','
     csv_str += '\n'
   
-  file = 'company/companies-11467-1.csv'
+  file = f'company/companies-11467-1.csv'
   with open(file, 'w', encoding='gb18030') as f:
     f.write(csv_str)
   print("save csv success: " + file)
@@ -179,4 +206,3 @@ def test_range():
 
 
 
-json_to_csv()
